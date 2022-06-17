@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -25,10 +26,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Employee employee = userRepo.findByUsernameIgnoreCase(username.toLowerCase());
+        Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(username.toLowerCase());
 
-        if (employee != null) {
-            return new CustomUserDetails(employee);
+        if (userOpt.isPresent()) {
+            return new CustomUserDetails(userOpt.get());
         } else {
             throw new UsernameNotFoundException(username);
         }
