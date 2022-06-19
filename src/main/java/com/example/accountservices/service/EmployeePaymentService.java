@@ -65,7 +65,9 @@ public class EmployeePaymentService implements PaymentService {
         if (paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(),
                 payment.getPeriod()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found");
-        } else {
+        } else if (userRepo.findByUsernameIgnoreCase(payment.getUsername()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }else {
             paymentRepo.updatePaymentByEmployeeAndPeriod(payment.getSalary(),
                     payment.getUsername(),
                     payment.getPeriod());
