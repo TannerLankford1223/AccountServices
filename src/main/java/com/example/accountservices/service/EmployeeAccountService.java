@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,7 +31,7 @@ public class EmployeeAccountService implements UserAccountService {
 
     private final UserRepository userRepo;
     private final RoleRepository roleRepo;
-    private final BCryptPasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
     public EmployeeAccountService(UserRepository userRepo,
                                   RoleRepository roleRepo) {
@@ -79,21 +80,22 @@ public class EmployeeAccountService implements UserAccountService {
     @Override
     public UserResponse changeRole(AdminRequest request) {
         Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUser());
-        Optional<EmployeeRole> roleOpt = roleRepo.findByGroup(request.getRole());
+        Optional<EmployeeRole> roleOpt = roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()));
+        AdminOperation operation = AdminOperation.valueOf(request.getOperation().toUpperCase());
         Employee user;
         EmployeeRole role;
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         } else if (roleOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
-        } else if (request.getOperation() != AdminOperation.GRANT && request.getOperation() != AdminOperation.REMOVE) {
+        } else if (operation != AdminOperation.GRANT && operation != AdminOperation.REMOVE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid operation");
         }
         user = userOpt.get();
         role = roleOpt.get();
-        if (Objects.equals(request.getOperation(), AdminOperation.GRANT)) {
+        if (Objects.equals(operation, AdminOperation.GRANT)) {
             grantRole(role, user);
-        } else if (Objects.equals(request.getOperation(), AdminOperation.REMOVE)) {
+        } else {
             removeRole(role, user);
         }
 
@@ -109,15 +111,13 @@ public class EmployeeAccountService implements UserAccountService {
     @Transactional
     public void grantRole(EmployeeRole role, Employee user) {
 
-        // Administrators cannot be Accountants or Auditors. There can be only one Auditor.
+        // Administrators cannot be Accountants or Auditors.
         if (user.hasRole(UserRole.ADMINISTRATOR) ||
                 ((user.hasRole(UserRole.ACCOUNTANT) ||
                         user.hasRole(UserRole.AUDITOR)) &&
                         role.getGroup() == UserRole.ADMINISTRATOR)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "The user cannot combine administrative and business roles!");
-        } else if (role.getGroup() == UserRole.AUDITOR && role.getUsers().size() > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There can be only one auditor");
         }
 
         user.grantRole(role);
@@ -178,7 +178,6 @@ public class EmployeeAccountService implements UserAccountService {
 
     @Override
     public List<UserResponse> getUsers() {
-        System.out.println("In get users");
         List<Employee> employeeList = userRepo.findAllByOrderByUserIdAsc();
 
         return employeeList.stream().map(employee -> UserResponse.builder()
@@ -221,29 +220,26 @@ public class EmployeeAccountService implements UserAccountService {
     @Transactional
     @Override
     public void resetFailedAttempts(String username) {
-        Optional<Employee> user = userRepo.findByUsernameIgnoreCase(username);
-        if (user.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        }
-        userRepo.updateFailedAttempts(0, user.get().getUsername());
+        userRepo.updateFailedAttempts(0, username);
     }
 
     @Override
     public AdminResponse changeAccess(AdminRequest request) {
         Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUser());
+        AdminOperation operation = AdminOperation.valueOf(request.getOperation().toUpperCase());
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
         Employee user = userOpt.get();
-        if (request.getOperation().equals(AdminOperation.LOCK)) {
+        if (operation.equals(AdminOperation.LOCK)) {
             lock(user);
         } else {
             unlock(user);
         }
 
         return AdminResponse.builder().status("User " +
-                user.getUsername() + " " + request.getOperation().toString().toLowerCase() + "ed!").build();
+                user.getUsername() + " " + request.getOperation().toLowerCase() + "ed!").build();
     }
 
     @Transactional
