@@ -57,13 +57,12 @@ public class EventLogger {
     @AfterReturning("com.example.accountservices.config.CommonJoinPointConfig.userRoles()")
     public void changeRoles(JoinPoint point) {
         UserDetails details = getUserDetails();
-
         AdminRequest adminRequest = (AdminRequest) point.getArgs()[0];
-
-        if (Objects.equals(adminRequest.getOperation(), AdminOperation.GRANT)) {
+        AdminOperation operation = AdminOperation.valueOf(adminRequest.getOperation().toUpperCase());
+        if (Objects.equals(operation, AdminOperation.GRANT)) {
             String object = "Grant role " + adminRequest.getRole() + " to " + adminRequest.getUser().toLowerCase();
             loggerService.log(LogEvent.GRANT_ROLE, details.getUsername(), object, request.getRequestURI());
-        } else if (Objects.equals(adminRequest.getOperation(), AdminOperation.REMOVE)) {
+        } else if (Objects.equals(operation, AdminOperation.REMOVE)) {
             String object = "Remove role " + adminRequest.getRole() + " from " + adminRequest.getUser().toLowerCase();
             loggerService.log(LogEvent.REMOVE_ROLE, details.getUsername(), object, request.getRequestURI());
         }
@@ -81,11 +80,13 @@ public class EventLogger {
     public void changeAccess(JoinPoint point) {
         UserDetails details = getUserDetails();
         AdminRequest changeAccessRequest = (AdminRequest) point.getArgs()[0];
+        AdminOperation operation = AdminOperation.valueOf(changeAccessRequest
+                .getOperation().toUpperCase());
         String user = changeAccessRequest.getUser().toLowerCase();
         String subject = details.getUsername();
         String path = request.getRequestURI();
 
-        if (changeAccessRequest.getOperation().equals(AdminOperation.LOCK)) {
+        if (operation.equals(AdminOperation.LOCK)) {
             String object = "Lock user " + user;
             loggerService.log(LogEvent.LOCK_USER, subject, object, path);
         } else {
