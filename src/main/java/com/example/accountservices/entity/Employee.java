@@ -53,11 +53,11 @@ public class Employee implements User {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name="role_id"))
-    protected Set<EmployeeRole> roles;
+    protected Set<EmployeeRole> roles = new HashSet<>();
 
-    private boolean accountNonBlocked;
+    private boolean accountNonBlocked = true;
 
-    private int failedAttempt;
+    private int failedAttempt = 0;
 
     private Date lockTime;
 
@@ -66,8 +66,6 @@ public class Employee implements User {
         this.lastName = lastName;
         this.username = username;
         this.password = password;
-        this.accountNonBlocked = true;
-        this.failedAttempt = 0;
     }
 
     @Override
