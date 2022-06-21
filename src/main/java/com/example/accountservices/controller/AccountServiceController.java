@@ -1,10 +1,11 @@
 package com.example.accountservices.controller;
 
 import com.example.accountservices.dto.NewPassword;
+import com.example.accountservices.dto.UserRequest;
 import com.example.accountservices.dto.UserResponse;
-import com.example.accountservices.entity.Employee;
 import com.example.accountservices.service.PaymentService;
 import com.example.accountservices.service.UserAccountService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,19 +31,24 @@ public class AccountServiceController {
     }
 
     @PostMapping("/auth/signup")
-    public UserResponse signup(@Valid @RequestBody Employee user) {
-        return null;
+    public UserResponse signup(@Valid @RequestBody UserRequest request) {
+        return userAccountService.register(request);
     }
 
     @PostMapping("/auth/changepass")
     public UserResponse changePassword(@Valid @RequestBody NewPassword newPassword) {
-        return null;
+        return userAccountService.changePassword(newPassword.getPassword());
     }
 
 
     @GetMapping("/empl/payment")
     public ResponseEntity<?> getEmplPayment(@Valid @AuthenticationPrincipal UserDetails details,
                                             @RequestParam(value = "period", required = false) Optional<String> period) {
-        return null;
+        if (period.isEmpty()) {
+            return new ResponseEntity<>(paymentService.getPayments(details.getUsername()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(paymentService.getPayment(details.getUsername(), period.get()),
+                    HttpStatus.OK);
+        }
     }
 }
