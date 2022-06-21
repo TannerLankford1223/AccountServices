@@ -22,22 +22,22 @@ public class AdminController {
 
     @PutMapping("/role")
     public UserResponse changeRoles(@RequestBody AdminRequest request) {
-        return null;
+        return userAccountService.changeRole(request);
     }
 
     @DeleteMapping("/{email}")
     public AdminResponse deleteUser(@PathVariable String email) {
-        return null;
+        return userAccountService.deleteUser(email);
     }
 
     @GetMapping("/")
     public List<UserResponse> getUsersInfo() {
-        return null;
+        return userAccountService.getUsers();
     }
 
     @PutMapping("/access")
     public AdminResponse changeAccess(@RequestBody AdminRequest request) {
-        return null;
+        return userAccountService.changeAccess(request);
     }
 
 }
