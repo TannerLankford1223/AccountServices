@@ -23,11 +23,11 @@ public class AccountingController {
 
     @PostMapping("/payments")
     public PaymentResponse postPayroll(@RequestBody List<@Valid Payment> payments) {
-        return null;
+        return paymentService.postPayroll(payments);
     }
 
     @PutMapping("/payments")
     public PaymentResponse updateSalary(@RequestBody @Valid Payment payment) {
-        return null;
+        return paymentService.updateSalary(payment);
     }
 }
