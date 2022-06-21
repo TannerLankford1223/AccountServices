@@ -20,6 +20,6 @@ public class EventLogController {
 
     @GetMapping("/events")
     public List<EventLogResponse> getLog() {
-        return null;
+        return loggerService.getLog();
     }
 }
