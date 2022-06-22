@@ -31,6 +31,11 @@ public class EmployeeRole {
     @ManyToMany(mappedBy = "roles")
     private Set<Employee> users;
 
+    public EmployeeRole(String accountRole, UserRole group) {
+        this.accountRole = accountRole;
+        this.group = group;
+    }
+
     @Override
     public String toString() {
         return "EmployeeRole{" +
