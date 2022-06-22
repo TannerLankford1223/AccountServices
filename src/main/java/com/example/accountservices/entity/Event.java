@@ -1,15 +1,13 @@
 package com.example.accountservices.entity;
 
 import com.example.accountservices.util.LogEvent;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Entity
 @Table(name = "event_log")
@@ -34,17 +32,5 @@ public class Event {
         this.subject = subject;
         this.object = object;
         this.path = path;
-    }
-
-    @Override
-    public String toString() {
-        return "Event{" +
-                "id=" + id +
-                ", date=" + date +
-                ", action='" + action + '\'' +
-                ", subject='" + subject + '\'' +
-                ", object='" + object + '\'' +
-                ", path='" + path + '\'' +
-                '}';
     }
 }
