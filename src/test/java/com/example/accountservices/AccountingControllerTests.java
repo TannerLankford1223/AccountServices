@@ -1,5 +1,6 @@
 package com.example.accountservices;
 
+import com.example.accountservices.dto.PaymentRequest;
 import com.example.accountservices.entity.Payment;
 import com.example.accountservices.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +59,7 @@ public class AccountingControllerTests {
     @Test
     @Sql(statements = "TRUNCATE TABLE payment")
     public void postPayroll_AllValidPayments_ReturnsPaymentResponse() throws Exception{
-        List<Payment> payments = getListOfPayments();
+        List<PaymentRequest> payments = getListOfPaymentRequests();
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/acct/payments")
@@ -73,9 +74,9 @@ public class AccountingControllerTests {
     @Test
     @Sql(statements = "TRUNCATE TABLE payment")
     public void postPayroll_PaymentInvalid_ReturnsException() throws Exception {
-        List<Payment> payments = getListOfPayments();
-        Payment newPayment = new Payment("john@acme.com", "13-Twenty22", 500000);
-        payments.add(newPayment);
+        List<PaymentRequest> payments = getListOfPaymentRequests();
+        PaymentRequest newPaymentRequest = new PaymentRequest("john@acme.com", "13-Twenty22", 500000L);
+        payments.add(newPaymentRequest);
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/acct/payments")
@@ -88,7 +89,7 @@ public class AccountingControllerTests {
 
     @Test
     public void postPayroll_UserIsNotAccountant_ReturnsException() throws Exception{
-        List<Payment> payments = getListOfPayments();
+        List<PaymentRequest> payments = getListOfPaymentRequests();
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/acct/payments")
@@ -100,10 +101,9 @@ public class AccountingControllerTests {
     }
 
     @Test
-    @Sql(scripts = "/insertUsers.sql")
-    @Sql(scripts = "/insertPayments.sql")
+    @Sql(scripts = { "/insertUsers.sql", "/insertPayments.sql"})
     public void updateSalary_EmployeeExists_ReturnsPaymentResponse() throws Exception{
-        Payment payment = new Payment("paul@acme.com", "05-2021", 8000000);
+        PaymentRequest payment = new PaymentRequest("paul@acme.com", "05-2021", 8000000L);
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.put("/api/acct/payments")
@@ -143,13 +143,13 @@ public class AccountingControllerTests {
                 .andExpect(status().is4xxClientError());
     }
 
-    public List<Payment> getListOfPayments() {
-        Payment payment = new Payment("john@acme.com", "05-2021", 5000000);
-        Payment payment1 = new Payment("jane@acme.com", "05-2022", 10000000);
-        Payment payment2 = new Payment("jane@acme.com", "06-2022", 12500000);
-        Payment payment3 = new Payment("jane@acme.com", "07-2022", 13500000);
-        Payment payment4 = new Payment("paul@acme.com", "05-2021", 7500000);
-        Payment payment5 = new Payment("paul@acme.com", "06-2021", 7000000);
+    public List<PaymentRequest> getListOfPaymentRequests() {
+        PaymentRequest payment = new PaymentRequest("john@acme.com", "05-2021", 5000000L);
+        PaymentRequest payment1 = new PaymentRequest("jane@acme.com", "05-2022", 10000000L);
+        PaymentRequest payment2 = new PaymentRequest("jane@acme.com", "06-2022", 12500000L);
+        PaymentRequest payment3 = new PaymentRequest("jane@acme.com", "07-2022", 13500000L);
+        PaymentRequest payment4 = new PaymentRequest("paul@acme.com", "05-2021", 7500000L);
+        PaymentRequest payment5 = new PaymentRequest("paul@acme.com", "06-2021", 7000000L);
 
         return new ArrayList<>(List.of(payment, payment1, payment2, payment3, payment4, payment5));
     }
