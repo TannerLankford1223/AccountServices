@@ -1,7 +1,7 @@
 package com.example.accountservices.controller;
 
+import com.example.accountservices.dto.PaymentRequest;
 import com.example.accountservices.dto.PaymentResponse;
-import com.example.accountservices.entity.Payment;
 import com.example.accountservices.service.PaymentService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +22,12 @@ public class AccountingController {
     }
 
     @PostMapping("/payments")
-    public PaymentResponse postPayroll(@RequestBody List<@Valid Payment> payments) {
+    public PaymentResponse postPayroll(@RequestBody List<@Valid PaymentRequest> payments) {
         return paymentService.postPayroll(payments);
     }
 
     @PutMapping("/payments")
-    public PaymentResponse updateSalary(@RequestBody @Valid Payment payment) {
+    public PaymentResponse updateSalary(@RequestBody @Valid PaymentRequest payment) {
         return paymentService.updateSalary(payment);
     }
 }

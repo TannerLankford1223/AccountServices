@@ -1,5 +1,6 @@
 package com.example.accountservices;
 
+import com.example.accountservices.dto.PaymentRequest;
 import com.example.accountservices.dto.PaymentResponse;
 import com.example.accountservices.entity.Employee;
 import com.example.accountservices.entity.Payment;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +37,8 @@ public class EmployeePaymentServiceTests {
 
     private EmployeePaymentService employeePaymentService;
 
+    private PaymentRequest paymentRequest;
+
     private Payment payment;
 
     private Payment payment1;
@@ -54,11 +58,12 @@ public class EmployeePaymentServiceTests {
         payment1.setUser(user);
         this.payment2 = new Payment(user.getUsername(), "11-2022", 925000);
         payment2.setUser(user);
+        this.paymentRequest = new PaymentRequest(user.getUsername(), "12-2021", 1000000L);
     }
 
     @Test
     public void postPayroll_ReturnsPaymentResponse() {
-        List<Payment> payments = List.of(payment, payment1, payment2);
+        List<PaymentRequest> payments = getListOfRequests();
         when(paymentRepo.findPaymentByUsernameAndPeriod(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
         when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
@@ -73,8 +78,9 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void postPayroll_PaymentHasInvalidDate_ThrowsStatusException() {
-        Payment invalidPayment = new Payment(user.getUsername(), "13-2025", 300000);
-        List<Payment> payments = List.of(payment, payment1, payment2, invalidPayment);
+        PaymentRequest invalidPayment = new PaymentRequest(user.getUsername(), "13-2025", 300000L);
+        List<PaymentRequest> payments = getListOfRequests();
+        payments.add(invalidPayment);
         when(paymentRepo.findPaymentByUsernameAndPeriod(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
         when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
@@ -84,7 +90,7 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void postPayroll_PaymentAlreadyPosted_ThrowsStatusException() {
-        List<Payment> payments = List.of(payment, payment1, payment2);
+        List<PaymentRequest> payments = getListOfRequests();
         when(paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(), payment.getPeriod()))
                 .thenReturn(Optional.of(payment));
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.postPayroll(payments));
@@ -107,37 +113,37 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void updateSalary_ValidUserAndPayment_ReturnPaymentResponse() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(), payment.getPeriod()))
+        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.of(payment));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        doNothing().when(paymentRepo).updatePaymentByEmployeeAndPeriod(payment.getSalary(), payment.getUsername(),
-                payment.getPeriod());
+        when(userRepo.findByUsernameIgnoreCase(paymentRequest.getEmail())).thenReturn(Optional.of(user));
+        doNothing().when(paymentRepo).updatePaymentByEmployeeAndPeriod(paymentRequest.getSalary(),
+                paymentRequest.getEmail(),
+                paymentRequest.getPeriod());
 
-        PaymentResponse response = employeePaymentService.updateSalary(payment);
+        PaymentResponse response = employeePaymentService.updateSalary(paymentRequest);
 
         assertEquals("Updated successfully", response.getStatus());
     }
 
     @Test
     public void updateSalary_NonExistentUser_ThrowsStatusException() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(), payment.getPeriod()))
+        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.of(payment));
         when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(payment));
+        assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(paymentRequest));
     }
 
     @Test
     public void updateSalary_InvalidPayment_ThrowsStatusException() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(), payment.getPeriod()))
+        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(payment));
+        assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(paymentRequest));
     }
 
     @Test
     public void getPayments_returnsListOfPaymentResponses() {
-        List<Payment> payments = List.of(payment, payment1, payment2);
         when(paymentRepo.findAllByUsernameOrderByPeriodDesc(user.getUsername()))
                 .thenReturn(List.of(payment2, payment1, payment));
 
@@ -176,5 +182,24 @@ public class EmployeePaymentServiceTests {
                 .thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> employeePaymentService
                 .getPayment(payment1.getUsername(), payment1.getPeriod()));
+    }
+
+    public List<PaymentRequest> getListOfRequests() {
+        PaymentRequest request = new PaymentRequest(user.getUsername(), "05-2022", 75000L);
+        PaymentRequest request1 = new PaymentRequest(user.getUsername(), "08-2022", 55000L);
+        PaymentRequest request2 = new PaymentRequest(user.getUsername(), "11-2022", 925000L);
+
+        return new ArrayList<>(List.of(request, request1, request2));
+    }
+
+    public List<Payment> getListOfPayments() {
+        Payment payment = new Payment(user.getUsername(), "05-2022", 75000);
+        payment.setUser(user);
+        Payment payment1 = new Payment(user.getUsername(), "08-2022", 55000);
+        payment1.setUser(user);
+        Payment payment2 = new Payment(user.getUsername(), "11-2022", 925000);
+        payment2.setUser(user);
+
+        return new ArrayList<>(List.of(payment, payment1, payment2));
     }
 }
