@@ -34,7 +34,7 @@ public class Employee implements User {
     private String lastName;
 
     @NotBlank
-    @JsonProperty("email")
+    @JsonProperty("username")
     @Pattern(regexp = "\\w+(@acme.com)$", message = "Must be an acme.com email")
     private String username;
 
