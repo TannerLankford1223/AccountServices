@@ -1,7 +1,5 @@
 package com.example.accountservices.dto;
 
-import com.example.accountservices.util.AdminOperation;
-import com.example.accountservices.util.UserRole;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +16,9 @@ public class AdminResponse {
     @JsonProperty("status")
     private final String status;
 
-    private UserRole role;
+    private String role;
 
-    private AdminOperation operation;
+    private String operation;
 
     @JsonProperty("new_password")
     @Size(min = 12, message = "Password length must be 12 chars minimum!")

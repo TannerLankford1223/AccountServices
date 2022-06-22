@@ -1,25 +1,28 @@
 package com.example.accountservices.dto;
 
-import com.example.accountservices.util.AdminOperation;
-import com.example.accountservices.util.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AdminRequest {
 
     @NotBlank
-    private String user;
+    private String username;
 
-    private UserRole role;
+    @Pattern(regexp = "ADMINSTRATOR|ACCOUNTANT|AUDITOR|USER", message = "Invalid role")
+    private String role;
 
-    private AdminOperation operation;
+    @Pattern(regexp = "GRANT|REMOVE|LOCK|UNLOCK", message = "Invalid administer operation")
+    private String operation;
 
-    public AdminRequest(String user, AdminOperation operation) {
-        this.user = user;
+    public AdminRequest(String username, String operation) {
+        this.username = username;
         this.operation = operation;
     }
 
