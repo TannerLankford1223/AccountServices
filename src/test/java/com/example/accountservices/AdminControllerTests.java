@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,7 +66,8 @@ public class AdminControllerTests {
         mockMvc.perform(request.with(user("john@acme.com").roles("ADMINISTRATOR")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("jane@acme.com")))
-                .andExpect(jsonPath("$.roles[0]", is("ROLE_ACCOUNTANT")));
+                .andExpect(jsonPath("$.roles[0]", is("ROLE_ACCOUNTANT")))
+                .andDo(document("grant-user-role"));
     }
 
     @Test
@@ -85,7 +87,8 @@ public class AdminControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("paul@acme.com")))
                 .andExpect(jsonPath("$.roles.size()", is(1)))
-                .andExpect(jsonPath("$.roles[0]", is("ROLE_USER")));
+                .andExpect(jsonPath("$.roles[0]", is("ROLE_USER")))
+                .andDo(document("remove-user-role"));
     }
 
     @Test
@@ -134,7 +137,8 @@ public class AdminControllerTests {
                         .contentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(request.with(user("john@acme.com").roles("ADMINISTRATOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("Deleted successfully")));
+                .andExpect(jsonPath("$.status", is("Deleted successfully")))
+                .andDo(document("delete-user"));
     }
 
     @Test
@@ -153,7 +157,8 @@ public class AdminControllerTests {
                         .contentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(request.with(user("john@acme.com").roles("ADMINISTRATOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(3)));
+                .andExpect(jsonPath("$.size()", is(3)))
+                .andDo(document("get-list-of-users"));
     }
 
     @Test
@@ -176,7 +181,8 @@ public class AdminControllerTests {
                         .content(objectMapper.writeValueAsString(grantRole));
         mockMvc.perform(request.with(user("john@acme.com").roles("ADMINISTRATOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("User jane@acme.com locked")));
+                .andExpect(jsonPath("$.status", is("User jane@acme.com locked")))
+                .andDo(document("lock-user"));
     }
 
     @Test
@@ -190,7 +196,8 @@ public class AdminControllerTests {
                         .content(objectMapper.writeValueAsString(grantRole));
         mockMvc.perform(request.with(user("john@acme.com").roles("ADMINISTRATOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("User jane@acme.com unlocked")));
+                .andExpect(jsonPath("$.status", is("User jane@acme.com unlocked")))
+                .andDo(document("unlock-user"));
     }
 
     @Test

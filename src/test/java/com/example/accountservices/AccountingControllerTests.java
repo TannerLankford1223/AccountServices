@@ -2,7 +2,6 @@ package com.example.accountservices;
 
 import com.example.accountservices.dto.PaymentRequest;
 import com.example.accountservices.entity.Payment;
-import com.example.accountservices.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,8 +40,8 @@ public class AccountingControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    private PaymentService paymentService;
+//    @Autowired
+//    private PaymentService paymentService;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")
@@ -68,7 +68,8 @@ public class AccountingControllerTests {
                         .content(objectMapper.writeValueAsString(payments));
         mockMvc.perform(request.with(user("john@acme.com").roles("ACCOUNTANT")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("Added successfully")));
+                .andExpect(jsonPath("$.status", is("Added successfully")))
+                .andDo(document("post-payroll"));
     }
 
     @Test
@@ -112,7 +113,8 @@ public class AccountingControllerTests {
                         .content(objectMapper.writeValueAsString(payment));
         mockMvc.perform(request.with(user("john@acme.com").roles("ACCOUNTANT")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("Updated successfully")));
+                .andExpect(jsonPath("$.status", is("Updated successfully")))
+                .andDo(document("update-user-salary"));
     }
 
     @Test
