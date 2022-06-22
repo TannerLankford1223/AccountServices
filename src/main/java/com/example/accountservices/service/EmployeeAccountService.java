@@ -2,6 +2,7 @@ package com.example.accountservices.service;
 
 import com.example.accountservices.dto.AdminRequest;
 import com.example.accountservices.dto.AdminResponse;
+import com.example.accountservices.dto.UserRequest;
 import com.example.accountservices.dto.UserResponse;
 import com.example.accountservices.entity.Employee;
 import com.example.accountservices.entity.EmployeeRole;
@@ -13,7 +14,6 @@ import com.example.accountservices.util.UserRole;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,21 +34,24 @@ public class EmployeeAccountService implements UserAccountService {
     private final PasswordEncoder encoder;
 
     public EmployeeAccountService(UserRepository userRepo,
-                                  RoleRepository roleRepo) {
+                                  RoleRepository roleRepo,
+                                  PasswordEncoder encoder) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
-        this.encoder = new BCryptPasswordEncoder();
+        this.encoder = encoder;
     }
 
     @Transactional
     @Override
-    public UserResponse register(Employee user) {
-        if (userRepo.findByUsernameIgnoreCase(user.getUsername()).isPresent()) {
+    public UserResponse register(UserRequest request) {
+        if (userRepo.findByUsernameIgnoreCase(request.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User exists");
-        } else if (BreachedPasswords.isBreached(user.getPassword())) {
+        } else if (BreachedPasswords.isBreached(request.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The password is a known breached password");
         }
 
+        Employee user = new Employee(request.getName(), request.getLastName(),
+                request.getUsername(), request.getPassword());
         user.setPassword(encoder.encode(user.getPassword()));
         initRole(user);
 
@@ -79,7 +82,7 @@ public class EmployeeAccountService implements UserAccountService {
     // Change the employee's role
     @Override
     public UserResponse changeRole(AdminRequest request) {
-        Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUser());
+        Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUsername());
         Optional<EmployeeRole> roleOpt = roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()));
         AdminOperation operation = AdminOperation.valueOf(request.getOperation().toUpperCase());
         Employee user;
@@ -93,6 +96,7 @@ public class EmployeeAccountService implements UserAccountService {
         }
         user = userOpt.get();
         role = roleOpt.get();
+
         if (Objects.equals(operation, AdminOperation.GRANT)) {
             grantRole(role, user);
         } else {
@@ -127,13 +131,13 @@ public class EmployeeAccountService implements UserAccountService {
     @Transactional
     public void removeRole(EmployeeRole role, Employee employee) {
         if (!employee.hasRole(role.getGroup())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The user does not have a role!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The user does not have the role provided");
         } else if (!roleExists(role.getGroup())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found");
         } else if (Objects.equals(role.getGroup(), UserRole.ADMINISTRATOR)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't remove ADMINISTRATOR role!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't remove ADMINISTRATOR role");
         } else if (employee.getRoles().size() <= 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The user must have at least one role!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The user must have at least one role");
         } else {
             employee.removeRole(role);
             userRepo.save(employee);
@@ -153,7 +157,6 @@ public class EmployeeAccountService implements UserAccountService {
     @Override
     public UserResponse changePassword(String password) {
         UserDetails details = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(details.getUsername());
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
@@ -206,7 +209,7 @@ public class EmployeeAccountService implements UserAccountService {
 
         return AdminResponse.builder()
                 .user(user.getUsername())
-                .status("Deleted successfully!")
+                .status("Deleted successfully")
                 .build();
     }
 
@@ -225,7 +228,7 @@ public class EmployeeAccountService implements UserAccountService {
 
     @Override
     public AdminResponse changeAccess(AdminRequest request) {
-        Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUser());
+        Optional<Employee> userOpt = userRepo.findByUsernameIgnoreCase(request.getUsername());
         AdminOperation operation = AdminOperation.valueOf(request.getOperation().toUpperCase());
         if (userOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
@@ -234,18 +237,20 @@ public class EmployeeAccountService implements UserAccountService {
         Employee user = userOpt.get();
         if (operation.equals(AdminOperation.LOCK)) {
             lock(user);
-        } else {
+        } else if (operation.equals(AdminOperation.UNLOCK)){
             unlock(user);
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid operation");
         }
 
         return AdminResponse.builder().status("User " +
-                user.getUsername() + " " + request.getOperation().toLowerCase() + "ed!").build();
+                user.getUsername() + " " + request.getOperation().toLowerCase() + "ed").build();
     }
 
     @Transactional
     void lock(Employee user) {
         if (user.hasRole(UserRole.ADMINISTRATOR)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't lock the ADMINISTRATOR!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't lock the ADMINISTRATOR");
         }
         user.setAccountNonBlocked(false);
         user.setLockTime(new Date());
