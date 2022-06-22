@@ -60,10 +60,10 @@ public class EventLogger {
         AdminRequest adminRequest = (AdminRequest) point.getArgs()[0];
         AdminOperation operation = AdminOperation.valueOf(adminRequest.getOperation().toUpperCase());
         if (Objects.equals(operation, AdminOperation.GRANT)) {
-            String object = "Grant role " + adminRequest.getRole() + " to " + adminRequest.getUser().toLowerCase();
+            String object = "Grant role " + adminRequest.getRole() + " to " + adminRequest.getUsername().toLowerCase();
             loggerService.log(LogEvent.GRANT_ROLE, details.getUsername(), object, request.getRequestURI());
         } else if (Objects.equals(operation, AdminOperation.REMOVE)) {
-            String object = "Remove role " + adminRequest.getRole() + " from " + adminRequest.getUser().toLowerCase();
+            String object = "Remove role " + adminRequest.getRole() + " from " + adminRequest.getUsername().toLowerCase();
             loggerService.log(LogEvent.REMOVE_ROLE, details.getUsername(), object, request.getRequestURI());
         }
     }
@@ -82,7 +82,7 @@ public class EventLogger {
         AdminRequest changeAccessRequest = (AdminRequest) point.getArgs()[0];
         AdminOperation operation = AdminOperation.valueOf(changeAccessRequest
                 .getOperation().toUpperCase());
-        String user = changeAccessRequest.getUser().toLowerCase();
+        String user = changeAccessRequest.getUsername().toLowerCase();
         String subject = details.getUsername();
         String path = request.getRequestURI();
 
