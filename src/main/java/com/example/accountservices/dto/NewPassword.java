@@ -1,13 +1,13 @@
 package com.example.accountservices.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import javax.validation.constraints.Size;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
 public class NewPassword {
 
     @JsonProperty("new_password")
