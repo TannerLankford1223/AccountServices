@@ -1,5 +1,6 @@
 package com.example.accountservices.service;
 
+import com.example.accountservices.dto.PaymentRequest;
 import com.example.accountservices.dto.PaymentResponse;
 import com.example.accountservices.entity.Employee;
 import com.example.accountservices.entity.Payment;
@@ -32,14 +33,15 @@ public class EmployeePaymentService implements PaymentService {
 
     @Transactional
     @Override
-    public PaymentResponse postPayroll(List<Payment> payments) {
-        for (Payment payment : payments) {
-            if (DateValidator.isDateInvalid(payment.getPeriod())) {
+    public PaymentResponse postPayroll(List<PaymentRequest> payments) {
+        for (PaymentRequest request : payments) {
+            if (DateValidator.isDateInvalid(request.getPeriod())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date");
-            } else if (paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(),
-                    payment.getPeriod()).isPresent()) {
+            } else if (paymentRepo.findPaymentByUsernameAndPeriod(request.getEmail(),
+                    request.getPeriod()).isPresent()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment already exists");
             } else {
+                Payment payment = new Payment(request.getEmail(), request.getPeriod(), request.getSalary());
                 insertPayment(payment);
             }
         }
@@ -61,16 +63,16 @@ public class EmployeePaymentService implements PaymentService {
     @CachePut("payments")
     @Transactional
     @Override
-    public PaymentResponse updateSalary(Payment payment) {
-        if (paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(),
-                payment.getPeriod()).isEmpty()) {
+    public PaymentResponse updateSalary(PaymentRequest request) {
+        if (paymentRepo.findPaymentByUsernameAndPeriod(request.getEmail(),
+                request.getPeriod()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found");
-        } else if (userRepo.findByUsernameIgnoreCase(payment.getUsername()).isEmpty()) {
+        } else if (userRepo.findByUsernameIgnoreCase(request.getEmail()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }else {
-            paymentRepo.updatePaymentByEmployeeAndPeriod(payment.getSalary(),
-                    payment.getUsername(),
-                    payment.getPeriod());
+            paymentRepo.updatePaymentByEmployeeAndPeriod(request.getSalary(),
+                    request.getEmail(),
+                    request.getPeriod());
         }
 
         return PaymentResponse.builder().status("Updated successfully").build();
