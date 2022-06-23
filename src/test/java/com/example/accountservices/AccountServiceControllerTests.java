@@ -2,6 +2,8 @@ package com.example.accountservices;
 
 import com.example.accountservices.dto.NewPassword;
 import com.example.accountservices.dto.UserRequest;
+import com.example.accountservices.service.PaymentService;
+import com.example.accountservices.service.UserAccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.is;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,11 +39,11 @@ public class AccountServiceControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
-//    @Autowired
-//    private UserAccountService accountService;
-//
-//    @Autowired
-//    private PaymentService paymentService;
+    @Autowired
+    private UserAccountService accountService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")
@@ -67,8 +68,7 @@ public class AccountServiceControllerTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequest));
         mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andDo(document("signup-user"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -83,8 +83,7 @@ public class AccountServiceControllerTests {
         mockMvc.perform(request.with(user("jane@acme.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("jane@acme.com")))
-                .andExpect(jsonPath("$.status", is("The password has been updated successfully")))
-                .andDo(document("change-user-password"));
+                .andExpect(jsonPath("$.status", is("The password has been updated successfully")));
     }
 
     @Test
@@ -108,8 +107,7 @@ public class AccountServiceControllerTests {
                         .contentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(request.with(user("jane@acme.com")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(3)))
-                .andDo(document("get-user-payments"));
+                .andExpect(jsonPath("$.size()", is(3)));
     }
 
     @Test
@@ -121,8 +119,7 @@ public class AccountServiceControllerTests {
         mockMvc.perform(request.with(user("paul@acme.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastname", is("McCartney")))
-                .andExpect(jsonPath("$.period", is("June-2021")))
-                .andDo(document("get-user-payment"));
+                .andExpect(jsonPath("$.period", is("June-2021")));
     }
 
     @Test
