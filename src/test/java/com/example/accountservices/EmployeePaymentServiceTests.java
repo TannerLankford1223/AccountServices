@@ -1,12 +1,13 @@
 package com.example.accountservices;
 
-import com.example.accountservices.dto.PaymentRequest;
-import com.example.accountservices.dto.PaymentResponse;
-import com.example.accountservices.entity.Employee;
-import com.example.accountservices.entity.Payment;
-import com.example.accountservices.persistence.PaymentRepository;
-import com.example.accountservices.persistence.UserRepository;
-import com.example.accountservices.service.EmployeePaymentService;
+import com.example.accountservices.domain.data.PaymentRequest;
+import com.example.accountservices.domain.data.PaymentResponse;
+import com.example.accountservices.domain.ports.api.PaymentServicePort;
+import com.example.accountservices.domain.ports.spi.PaymentPersistencePort;
+import com.example.accountservices.domain.ports.spi.UserPersistencePort;
+import com.example.accountservices.domain.service.EmployeePaymentService;
+import com.example.accountservices.infrastructure.entity.Employee;
+import com.example.accountservices.infrastructure.entity.Payment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +30,13 @@ import static org.mockito.Mockito.*;
 public class EmployeePaymentServiceTests {
 
     @Mock
-    private PaymentRepository paymentRepo;
+    private PaymentPersistencePort paymentRepo;
 
     @Mock
-    private UserRepository userRepo;
+    private UserPersistencePort userRepo;
 
 
-    private EmployeePaymentService employeePaymentService;
+    private PaymentServicePort employeePaymentService;
 
     private PaymentRequest paymentRequest;
 
@@ -64,14 +65,14 @@ public class EmployeePaymentServiceTests {
     @Test
     public void postPayroll_ReturnsPaymentResponse() {
         List<PaymentRequest> payments = getListOfRequests();
-        when(paymentRepo.findPaymentByUsernameAndPeriod(any(String.class), any(String.class)))
+        when(paymentRepo.find(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         PaymentResponse response = employeePaymentService.postPayroll(payments);
 
         verify(paymentRepo, times(3))
-                .findPaymentByUsernameAndPeriod(any(String.class), any(String.class));
+                .find(any(String.class), any(String.class));
 
         assertEquals("Added successfully", response.getStatus());
     }
@@ -81,9 +82,9 @@ public class EmployeePaymentServiceTests {
         PaymentRequest invalidPayment = new PaymentRequest(user.getUsername(), "13-2025", 300000L);
         List<PaymentRequest> payments = getListOfRequests();
         payments.add(invalidPayment);
-        when(paymentRepo.findPaymentByUsernameAndPeriod(any(String.class), any(String.class)))
+        when(paymentRepo.find(any(String.class), any(String.class)))
                 .thenReturn(Optional.empty());
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.postPayroll(payments));
     }
@@ -91,14 +92,14 @@ public class EmployeePaymentServiceTests {
     @Test
     public void postPayroll_PaymentAlreadyPosted_ThrowsStatusException() {
         List<PaymentRequest> payments = getListOfRequests();
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment.getUsername(), payment.getPeriod()))
+        when(paymentRepo.find(payment.getUsername(), payment.getPeriod()))
                 .thenReturn(Optional.of(payment));
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.postPayroll(payments));
     }
 
     @Test
     public void insertValidPayment() {
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
         when(paymentRepo.save(payment)).thenReturn(payment);
 
         employeePaymentService.insertPayment(payment);
@@ -107,16 +108,16 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void insertPayment_UserNonExistent_ThrowsStatusException() {
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.insertPayment(payment));
     }
 
     @Test
     public void updateSalary_ValidUserAndPayment_ReturnPaymentResponse() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
+        when(paymentRepo.find(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.of(payment));
-        when(userRepo.findByUsernameIgnoreCase(paymentRequest.getEmail())).thenReturn(Optional.of(user));
-        doNothing().when(paymentRepo).updatePaymentByEmployeeAndPeriod(paymentRequest.getSalary(),
+        when(userRepo.find(paymentRequest.getEmail())).thenReturn(Optional.of(user));
+        doNothing().when(paymentRepo).updatePayment(paymentRequest.getSalary(),
                 paymentRequest.getEmail(),
                 paymentRequest.getPeriod());
 
@@ -127,16 +128,16 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void updateSalary_NonExistentUser_ThrowsStatusException() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
+        when(paymentRepo.find(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.of(payment));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(paymentRequest));
     }
 
     @Test
     public void updateSalary_InvalidPayment_ThrowsStatusException() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(paymentRequest.getEmail(), paymentRequest.getPeriod()))
+        when(paymentRepo.find(paymentRequest.getEmail(), paymentRequest.getPeriod()))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> employeePaymentService.updateSalary(paymentRequest));
@@ -144,7 +145,7 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void getPayments_returnsListOfPaymentResponses() {
-        when(paymentRepo.findAllByUsernameOrderByPeriodDesc(user.getUsername()))
+        when(paymentRepo.findAll(user.getUsername()))
                 .thenReturn(List.of(payment2, payment1, payment));
 
         List<PaymentResponse> response = employeePaymentService.getPayments(user.getUsername());
@@ -157,7 +158,7 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void getPayment_ReturnsPaymentResponse() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment2.getUsername(), payment2.getPeriod()))
+        when(paymentRepo.find(payment2.getUsername(), payment2.getPeriod()))
                 .thenReturn(Optional.of(payment2));
 
         PaymentResponse response = employeePaymentService.getPayment(payment2.getUsername(), payment2.getPeriod());
@@ -178,7 +179,7 @@ public class EmployeePaymentServiceTests {
 
     @Test
     public void getPayment_NonExistentPayment_ThrowsStatusException() {
-        when(paymentRepo.findPaymentByUsernameAndPeriod(payment1.getUsername(), payment1.getPeriod()))
+        when(paymentRepo.find(payment1.getUsername(), payment1.getPeriod()))
                 .thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> employeePaymentService
                 .getPayment(payment1.getUsername(), payment1.getPeriod()));

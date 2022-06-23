@@ -1,8 +1,8 @@
 package com.example.accountservices;
 
-import com.example.accountservices.dto.AdminRequest;
-import com.example.accountservices.dto.UserResponse;
-import com.example.accountservices.service.UserAccountService;
+import com.example.accountservices.domain.data.AdminRequest;
+import com.example.accountservices.domain.data.UserResponse;
+import com.example.accountservices.domain.ports.api.UserAccountServicePort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class AdminControllerTests {
     ObjectMapper objectMapper;
 
     @Autowired
-    private UserAccountService accountService;
+    private UserAccountServicePort accountService;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")

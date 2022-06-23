@@ -1,8 +1,7 @@
 package com.example.accountservices;
 
-import com.example.accountservices.dto.PaymentRequest;
-import com.example.accountservices.entity.Payment;
-import com.example.accountservices.service.PaymentService;
+import com.example.accountservices.domain.data.PaymentRequest;
+import com.example.accountservices.infrastructure.entity.Payment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +38,6 @@ public class AccountingControllerTests {
     private MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    private PaymentService paymentService;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")

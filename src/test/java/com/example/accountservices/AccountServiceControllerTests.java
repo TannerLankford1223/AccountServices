@@ -1,9 +1,7 @@
 package com.example.accountservices;
 
-import com.example.accountservices.dto.NewPassword;
-import com.example.accountservices.dto.UserRequest;
-import com.example.accountservices.service.PaymentService;
-import com.example.accountservices.service.UserAccountService;
+import com.example.accountservices.domain.data.NewPassword;
+import com.example.accountservices.domain.data.UserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +36,6 @@ public class AccountServiceControllerTests {
     private MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    private UserAccountService accountService;
-
-    @Autowired
-    private PaymentService paymentService;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")

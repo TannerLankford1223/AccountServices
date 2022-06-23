@@ -1,6 +1,5 @@
 package com.example.accountservices;
 
-import com.example.accountservices.persistence.EventLogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,6 @@ public class EventLogControllerTests {
     private MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    private EventLogRepository eventLogRepo;
 
     @Container
     private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer("postgres")

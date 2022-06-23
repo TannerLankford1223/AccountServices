@@ -1,16 +1,16 @@
 package com.example.accountservices;
 
-import com.example.accountservices.dto.AdminRequest;
-import com.example.accountservices.dto.UserRequest;
-import com.example.accountservices.dto.UserResponse;
-import com.example.accountservices.entity.CustomUserDetails;
-import com.example.accountservices.entity.Employee;
-import com.example.accountservices.entity.EmployeeRole;
-import com.example.accountservices.persistence.RoleRepository;
-import com.example.accountservices.persistence.UserRepository;
-import com.example.accountservices.service.EmployeeAccountService;
-import com.example.accountservices.service.UserAccountService;
-import com.example.accountservices.util.UserRole;
+import com.example.accountservices.domain.data.AdminRequest;
+import com.example.accountservices.domain.data.UserRequest;
+import com.example.accountservices.domain.data.UserResponse;
+import com.example.accountservices.domain.ports.api.UserAccountServicePort;
+import com.example.accountservices.domain.ports.spi.RolePersistencePort;
+import com.example.accountservices.domain.ports.spi.UserPersistencePort;
+import com.example.accountservices.domain.service.EmployeeAccountService;
+import com.example.accountservices.domain.util.UserRole;
+import com.example.accountservices.infrastructure.entity.CustomUserDetails;
+import com.example.accountservices.infrastructure.entity.Employee;
+import com.example.accountservices.infrastructure.entity.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,10 +40,10 @@ import static org.mockito.Mockito.*;
 public class EmployeeAccountServiceTests {
 
     @Mock
-    private UserRepository userRepo;
+    private UserPersistencePort userRepo;
 
     @Mock
-    private RoleRepository roleRepo;
+    private RolePersistencePort roleRepo;
 
 //    @Autowired
     private PasswordEncoder encoder;
@@ -51,7 +51,7 @@ public class EmployeeAccountServiceTests {
     private final Authentication authentication = Mockito.mock(Authentication.class);
     private final SecurityContext securityContext = Mockito.mock(SecurityContext.class);
 
-    private UserAccountService userAccountService;
+    private UserAccountServicePort userAccountService;
 
     private Employee user;
     private EmployeeRole adminRole;
@@ -84,7 +84,7 @@ public class EmployeeAccountServiceTests {
 
     @Test
     public void registerExistingUser_throwsError() {
-        when(userRepo.findByUsernameIgnoreCase("email@acme.com")).thenReturn(Optional.of(user));
+        when(userRepo.find("email@acme.com")).thenReturn(Optional.of(user));
         UserRequest request = new UserRequest(user.getName(), user.getLastName(),
                 user.getUsername(), user.getPassword());
         assertThrows(ResponseStatusException.class, () -> userAccountService.register(request));
@@ -102,7 +102,7 @@ public class EmployeeAccountServiceTests {
     public void changePassword_ToValidPassword_returnsUserResponse() {
         String newPassword = "testPassword1234";
         setUserDetails(List.of(adminRole));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         UserResponse response = userAccountService.changePassword(newPassword);
         assertEquals("The password has been updated successfully", response.getStatus());
@@ -112,7 +112,7 @@ public class EmployeeAccountServiceTests {
     public void changePassword_ToBreachedPass_throwsStatusException() {
         String newBreachedPassword = "PasswordForNovember";
         setUserDetails(List.of(adminRole));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changePassword(newBreachedPassword));
     }
@@ -121,7 +121,7 @@ public class EmployeeAccountServiceTests {
     public void changePassword_ToSamePass_throwsStatusException() {
         String samePassword = "thisIsAPassword";
         setUserDetails(List.of(userRole));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changePassword(samePassword));
     }
@@ -130,7 +130,7 @@ public class EmployeeAccountServiceTests {
     public void changePassword_UnabletoFindUser_throwsStatusException() {
         String newPassword = "testingNewPasswords";
         setUserDetails(List.of(userRole));
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changePassword(newPassword));
     }
@@ -138,8 +138,8 @@ public class EmployeeAccountServiceTests {
     @Test
     public void grantRoleToUser_returnsUserResponse() {
         AdminRequest request = new AdminRequest(user.getUsername(), "ADMINISTRATOR", "GRANT");
-        when(userRepo.findByUsernameIgnoreCase(request.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
+        when(userRepo.find(request.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
 
         UserResponse response = userAccountService.changeRole(request);
         assertEquals("firstname", response.getName());
@@ -153,8 +153,8 @@ public class EmployeeAccountServiceTests {
         user.grantRole(userRole);
         user.grantRole(accountantRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "ACCOUNTANT", "REMOVE");
-        when(userRepo.findByUsernameIgnoreCase(request.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(accountantRole));
+        when(userRepo.find(request.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(accountantRole));
 
         UserResponse response = userAccountService.changeRole(request);
         assertEquals("firstname", response.getName());
@@ -166,8 +166,8 @@ public class EmployeeAccountServiceTests {
     @Test
     public void changeRole_UserInvalid_throwsStatusException() {
         AdminRequest request = new AdminRequest(user.getUsername(), "ADMINISTRATOR", "GRANT");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
     }
@@ -175,8 +175,8 @@ public class EmployeeAccountServiceTests {
     @Test
     public void changeRoleToInvalidOperation_throwsStatusException() {
         AdminRequest request = new AdminRequest(user.getUsername(), "ADMINISTRATOR", "LOCK");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(adminRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
     }
@@ -185,8 +185,8 @@ public class EmployeeAccountServiceTests {
     public void grantBusinessRoleToAdmin_throwsStatusException() {
         user.grantRole(adminRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "ACCOUNTANT", "GRANT");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(accountantRole));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(accountantRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
     }
@@ -195,8 +195,8 @@ public class EmployeeAccountServiceTests {
     public void removeRole_UserDoesNotHaveRole_throwsStatusException() {
         user.grantRole(adminRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "USER", "REMOVE");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(userRole));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase()))).thenReturn(Optional.of(userRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
     }
@@ -207,8 +207,8 @@ public class EmployeeAccountServiceTests {
         user.grantRole(adminRole);
         user.grantRole(userRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "ADMINISTRATOR", "REMOVE");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase())))
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase())))
                 .thenReturn(Optional.of(adminRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
@@ -218,8 +218,8 @@ public class EmployeeAccountServiceTests {
     public void removeLastRoleFromUser_throwsStatusException() {
         user.grantRole(accountantRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "ACCOUNTANT", "REMOVE");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
-        when(roleRepo.findByGroup(UserRole.valueOf(request.getRole().toUpperCase())))
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
+        when(roleRepo.find(UserRole.valueOf(request.getRole().toUpperCase())))
                 .thenReturn(Optional.of(accountantRole));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeRole(request));
@@ -228,7 +228,7 @@ public class EmployeeAccountServiceTests {
     @Test
     public void getListOfUsers_returnsUserResponseList() {
         List<Employee> users = setListOfUsers();
-        when(userRepo.findAllByOrderByUserIdAsc()).thenReturn(users);
+        when(userRepo.findAllOrderDesc()).thenReturn(users);
 
         List<UserResponse> response = userAccountService.getUsers();
         assertEquals(4, response.size());
@@ -244,7 +244,7 @@ public class EmployeeAccountServiceTests {
 
     @Test
     public void deleteNonExistentUser_throwsStatusException() {
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> userAccountService.deleteUser(user.getUsername()));
     }
 
@@ -277,7 +277,7 @@ public class EmployeeAccountServiceTests {
     public void lockUser() {
         user.grantRole(userRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "LOCK");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         userAccountService.changeAccess(request);
     }
@@ -287,7 +287,7 @@ public class EmployeeAccountServiceTests {
         user.setAccountNonBlocked(false);
         user.setLockTime(Date.from(Instant.now()));
         user.setFailedAttempt(5);
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         AdminRequest request = new AdminRequest(user.getUsername(), "UNLOCK");
 
@@ -308,7 +308,7 @@ public class EmployeeAccountServiceTests {
     @Test
     public void changeAccessForNonExistentUser_throwsStatusException() {
         AdminRequest request = new AdminRequest(user.getUsername(), "UNLOCK");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.empty());
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeAccess(request));
     }
@@ -317,7 +317,7 @@ public class EmployeeAccountServiceTests {
     public void lockAdmin_throwsStatusException() {
         user.grantRole(adminRole);
         AdminRequest request = new AdminRequest(user.getUsername(), "LOCK");
-        when(userRepo.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+        when(userRepo.find(user.getUsername())).thenReturn(Optional.of(user));
 
         assertThrows(ResponseStatusException.class, () -> userAccountService.changeAccess(request));
     }
