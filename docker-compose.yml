@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+  app:
+    image: 'accountservices:latest'
+    build:
+      context: .
+    container_name: app
+    ports:
+      - "28852:28852"
+    depends_on:
+      - db
+    environment:
+      - SERVER_PORT=28852
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  db:
+    image: 'postgres:14-alpine'
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+

@@ -18,9 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
-
-//    private final PasswordEncoder encoder;
-
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
@@ -28,7 +25,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                           RestAuthenticationEntryPoint restAuthenticationEntryPoint,
                           CustomAccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
-//        this.passwordEncoder = passwordEncoder;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
     }

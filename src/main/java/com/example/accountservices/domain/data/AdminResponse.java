@@ -10,14 +10,16 @@ import javax.validation.constraints.Size;
 @Builder
 public class AdminResponse {
 
-    @JsonProperty("user")
+    @JsonProperty("username")
     private final String user;
 
     @JsonProperty("status")
     private final String status;
 
+    @JsonProperty("role")
     private String role;
 
+    @JsonProperty("operation")
     private String operation;
 
     @JsonProperty("new_password")

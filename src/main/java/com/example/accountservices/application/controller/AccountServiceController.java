@@ -40,7 +40,6 @@ public class AccountServiceController {
         return userAccountService.changePassword(newPassword.getPassword());
     }
 
-
     @GetMapping("/empl/payment")
     public ResponseEntity<?> getEmplPayment(@Valid @AuthenticationPrincipal UserDetails details,
                                             @RequestParam(value = "period", required = false) Optional<String> period) {

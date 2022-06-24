@@ -27,6 +27,7 @@ public class UserResponse {
     @JsonProperty("username")
     private final String username;
 
+    @JsonProperty("password")
     private final String password;
 
     @JsonProperty("roles")
