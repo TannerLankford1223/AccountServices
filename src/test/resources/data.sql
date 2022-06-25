@@ -1,7 +1,0 @@
-INSERT INTO principle_groups(roles, code)
-VALUES  ('ROLE_ADMINISTRATOR', 'ADMINISTRATOR'),
-        ('ROLE_USER', 'USER'),
-        ('ROLE_ACCOUNTANT', 'ACCOUNTANT'),
-        ('ROLE_AUDITOR', 'AUDITOR')
-ON CONFLICT (roles) DO NOTHING
-;
