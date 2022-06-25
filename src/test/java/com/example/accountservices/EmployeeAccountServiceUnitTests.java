@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class EmployeeAccountServiceTests {
+public class EmployeeAccountServiceUnitTests {
 
     @Mock
     private UserPersistencePort userRepo;

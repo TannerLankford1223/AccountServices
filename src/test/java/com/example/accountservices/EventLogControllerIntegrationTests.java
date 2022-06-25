@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(outputDir = "target/snippets")
 @Testcontainers
 @Sql(scripts = "/insertLogEvents.sql")
-public class EventLogControllerTests {
+public class EventLogControllerIntegrationTests {
 
     @Autowired
     private MockMvc mockMvc;

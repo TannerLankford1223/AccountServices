@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(outputDir = "target/snippets")
 @Testcontainers
 @Sql(scripts = "/insertUsers.sql")
-public class AccountServiceControllerTests {
+public class AccountServiceControllerIntegrationTests {
 
     @Autowired
     private MockMvc mockMvc;
