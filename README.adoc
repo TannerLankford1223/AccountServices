@@ -1,101 +1,6 @@
 = AccountServices
 
-Employee account and payroll services built using Spring Security. Access to endpoints
-are restricted using role-based access control (RBAC) following OWASP's Application Security
-Verification Standard. For more details on user role access please see the table below.
-
-*User Role Access*
-[cols=5]
-|===
-|Endpoint |Anonymous |User |Accountant|Administrator
-
-|*POST* api/auth/signup
-|Yes
-|Yes
-|Yes
-|Yes
-
-|*POST* api/auth/changepass
-|No
-|Yes
-|Yes
-|Yes
-
-|*GET* api/empl/payment
-|No
-|Yes
-|Yes
-|No
-
-|*POST* api/acct/payments
-|No
-|No
-|Yes
-|No
-
-|*PUT* api/acct/payments
-|No
-|No
-|Yes
-|No
-
-|*GET*  api/admin/user
-|No
-|No
-|No
-|Yes
-
-|*DELETE* api/admin/user
-|No
-|No
-|No
-|Yes
-
-|*PUT* api/admin/user/role
-|No
-|No
-|No
-|Yes
-|===
-
-Information is logged when certain events occur. The following table describes such events and
-the event name.
-
-*Information Security Events*
-[cols=2]
-|===
-|Description |Event Name
-
-|A user has been successfully registered
-|*CREATE_USER*
-
-|A user has changed the password successfully
-|*CHANGE_PASSWORD*
-
-|A user is trying to access a resource without access rights
-|*ACCESS_DENIED*
-
-|Failed authentication
-|*LOGIN_FAILED*
-
-|A role is granted to a user
-|*GRANT_ROLE*
-
-|A role has been revoked
-|*REMOVE_ROLE*
-
-|The Administrator has locked the user
-|*LOCK_USER*
-
-|The Administrator has unlocked a user
-|*UNLOCK_USER*
-
-|The Administrator has deleted a user
-|*DELETE_USER*
-
-|A user has been blocked on suspicion of a brute force attack
-|*BRUTE_FORCE*
-|===
+Employee account and payroll services built using Spring Security.
 
 == Installation and Getting Started
 
@@ -159,3 +64,144 @@ docker-compose -f docker-compose.test.yml up
 
 NOTE: There is a bug when testing with Docker due to the use of TestContainers in the integration tests.
 As of now, tests are only able to be ran locally. I am currently working to resolve this issue.
+
+== Details
+
+Brief descriptions of the available endpoints are available in the table below
+
+[cols=3]
+|===
+|Request Type |Endpoint |Definition
+
+|*POST*
+|api/auth/signup
+|Registers a new Employee
+
+|*POST*
+|api/auth/changepass
+|Allows an employee to change their password
+
+|*GET*
+|api/empl/payment
+|Returns an employees payment if provided a period the payment occured,
+ else it returns all of the employee's payments
+
+|*POST*
+|api/acct/payments
+|Allows an accountant to post payroll for employees
+
+|*PUT*
+|api/acct/payments
+|Allows an accountant to update a specific employee payment
+
+|*GET*
+|api/admin/user
+|Returns user information for all employees
+
+|*DELETE*
+|api/admin/user
+|Allows an admin to delete an employee
+
+|*PUT*
+|api/admin/user/role
+|Allows an admin to grant or revoke an employee role
+
+|===
+
+=== User Role Access
+
+Access to endpoints are restricted using role-based access control (RBAC) following OWASP's
+Application Security Verification Standard. For more details on user role access please
+see the table below.
+
+[cols=5]
+|===
+|Endpoint |Anonymous |User |Accountant|Administrator
+
+|api/auth/signup
+|Yes
+|Yes
+|Yes
+|Yes
+
+|api/auth/changepass
+|No
+|Yes
+|Yes
+|Yes
+
+|api/empl/payment
+|No
+|Yes
+|Yes
+|No
+
+|api/acct/payments
+|No
+|No
+|Yes
+|No
+
+|api/acct/payments
+|No
+|No
+|Yes
+|No
+
+|api/admin/user
+|No
+|No
+|No
+|Yes
+
+|api/admin/user
+|No
+|No
+|No
+|Yes
+
+|api/admin/user/role
+|No
+|No
+|No
+|Yes
+|===
+
+=== Information Security Event logging
+Information is logged when certain events occur. The following table describes such events and
+the event name.
+
+[cols=2]
+|===
+|Description |Event Name
+
+|A user has been successfully registered
+|*CREATE_USER*
+
+|A user has changed the password successfully
+|*CHANGE_PASSWORD*
+
+|A user is trying to access a resource without access rights
+|*ACCESS_DENIED*
+
+|Failed authentication
+|*LOGIN_FAILED*
+
+|A role is granted to a user
+|*GRANT_ROLE*
+
+|A role has been revoked
+|*REMOVE_ROLE*
+
+|The Administrator has locked the user
+|*LOCK_USER*
+
+|The Administrator has unlocked a user
+|*UNLOCK_USER*
+
+|The Administrator has deleted a user
+|*DELETE_USER*
+
+|A user has been blocked on suspicion of a brute force attack
+|*BRUTE_FORCE*
+|===
