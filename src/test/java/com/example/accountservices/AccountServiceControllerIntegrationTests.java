@@ -21,13 +21,14 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "target/snippets")
+@AutoConfigureRestDocs(outputDir = "target/snippets/account-services")
 @Testcontainers
 @Sql(scripts = "/insertUsers.sql")
 public class AccountServiceControllerIntegrationTests {
@@ -60,7 +61,8 @@ public class AccountServiceControllerIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequest));
         mockMvc.perform(request)
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andDo(document("signup-user"));
     }
 
     @Test
@@ -75,7 +77,8 @@ public class AccountServiceControllerIntegrationTests {
         mockMvc.perform(request.with(user("jane@acme.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("jane@acme.com")))
-                .andExpect(jsonPath("$.status", is("The password has been updated successfully")));
+                .andExpect(jsonPath("$.status", is("The password has been updated successfully")))
+                .andDo(document("change-password"));
     }
 
     @Test
@@ -99,7 +102,8 @@ public class AccountServiceControllerIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(request.with(user("jane@acme.com")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(3)));
+                .andExpect(jsonPath("$.size()", is(3)))
+                .andDo(document("return-all-employee-payments"));
     }
 
     @Test
@@ -111,7 +115,8 @@ public class AccountServiceControllerIntegrationTests {
         mockMvc.perform(request.with(user("paul@acme.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastname", is("McCartney")))
-                .andExpect(jsonPath("$.period", is("June-2021")));
+                .andExpect(jsonPath("$.period", is("June-2021")))
+                .andDo(document("return-employee-payment"));
     }
 
     @Test

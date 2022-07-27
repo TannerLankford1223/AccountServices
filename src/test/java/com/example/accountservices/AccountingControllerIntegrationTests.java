@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "target/snippets")
+@AutoConfigureRestDocs(outputDir = "target/snippets/accounting")
 @Testcontainers
 @Sql(scripts = "/insertUsers.sql")
 public class AccountingControllerIntegrationTests {
@@ -64,7 +65,8 @@ public class AccountingControllerIntegrationTests {
                         .content(objectMapper.writeValueAsString(payments));
         mockMvc.perform(request.with(user("john@acme.com").roles("ACCOUNTANT")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("Added successfully")));
+                .andExpect(jsonPath("$.status", is("Added successfully")))
+                .andDo(document("post-payroll"));
     }
 
     @Test
@@ -108,7 +110,8 @@ public class AccountingControllerIntegrationTests {
                         .content(objectMapper.writeValueAsString(payment));
         mockMvc.perform(request.with(user("john@acme.com").roles("ACCOUNTANT")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("Updated successfully")));
+                .andExpect(jsonPath("$.status", is("Updated successfully")))
+                .andDo(document("update-salary"));
     }
 
     @Test

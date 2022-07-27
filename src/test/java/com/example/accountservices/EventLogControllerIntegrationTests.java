@@ -20,12 +20,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "target/snippets")
+@AutoConfigureRestDocs(outputDir = "target/snippets/event-logging")
 @Testcontainers
 @Sql(scripts = "/insertLogEvents.sql")
 public class EventLogControllerIntegrationTests {
@@ -56,7 +57,8 @@ public class EventLogControllerIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(6)));
+                .andExpect(jsonPath("$.size()", is(6)))
+                .andDo(document("return-event-log"));
     }
 
     @Test
