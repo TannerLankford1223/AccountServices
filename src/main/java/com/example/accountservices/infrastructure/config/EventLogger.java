@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.config;
+package com.example.accountservices.infrastructure.config;
 
 import com.example.accountservices.domain.data.AdminRequest;
 import com.example.accountservices.domain.data.UserResponse;
@@ -34,27 +34,27 @@ public class EventLogger {
     }
 
 
-    @AfterReturning(value = "com.example.accountservices.launcher.config.CommonJoinPointConfig.registerUser()", returning = "response")
+    @AfterReturning(value = "com.example.accountservices.infrastructure.config.CommonJoinPointConfig.registerUser()", returning = "response")
     public void registerUser(Object response) {
         UserResponse userResponse = (UserResponse) response;
         eventLogServicePort.log(LogEvent.CREATE_USER, "Anonymous", userResponse.getUsername(),
                 request.getRequestURI());
     }
 
-    @After("com.example.accountservices.launcher.config.CommonJoinPointConfig.changePass()")
+    @After("com.example.accountservices.infrastructure.config.CommonJoinPointConfig.changePass()")
     public void changePass() {
         UserDetails details = getUserDetails();
         eventLogServicePort.log(LogEvent.CHANGE_PASSWORD, details.getUsername().toLowerCase(), details.getUsername(),
                 request.getRequestURI());
     }
 
-    @After("com.example.accountservices.launcher.config.CommonJoinPointConfig.accessDenied()")
+    @After("com.example.accountservices.infrastructure.config.CommonJoinPointConfig.accessDenied()")
     public void accessDenied() {
         UserDetails details = getUserDetails();
         eventLogServicePort.log(LogEvent.ACCESS_DENIED, details.getUsername(), request.getRequestURI(), request.getRequestURI());
     }
 
-    @AfterReturning("com.example.accountservices.launcher.config.CommonJoinPointConfig.userRoles()")
+    @AfterReturning("com.example.accountservices.infrastructure.config.CommonJoinPointConfig.userRoles()")
     public void changeRoles(JoinPoint point) {
         UserDetails details = getUserDetails();
         AdminRequest adminRequest = (AdminRequest) point.getArgs()[0];
@@ -68,7 +68,7 @@ public class EventLogger {
         }
     }
 
-    @AfterReturning("com.example.accountservices.launcher.config.CommonJoinPointConfig.deleteUser()")
+    @AfterReturning("com.example.accountservices.infrastructure.config.CommonJoinPointConfig.deleteUser()")
     public void deleteUser(JoinPoint point) {
         UserDetails details = getUserDetails();
         String object = point.getArgs()[0].toString();
@@ -76,7 +76,7 @@ public class EventLogger {
         eventLogServicePort.log(LogEvent.DELETE_USER, details.getUsername(), object, request.getRequestURI());
     }
 
-    @AfterReturning(value = "com.example.accountservices.launcher.config.CommonJoinPointConfig.changeAccess()")
+    @AfterReturning(value = "com.example.accountservices.infrastructure.config.CommonJoinPointConfig.changeAccess()")
     public void changeAccess(JoinPoint point) {
         UserDetails details = getUserDetails();
         AdminRequest changeAccessRequest = (AdminRequest) point.getArgs()[0];

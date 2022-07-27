@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.config;
+package com.example.accountservices.infrastructure.config;
 
 import org.aspectj.lang.annotation.Pointcut;
 
@@ -11,7 +11,7 @@ public class CommonJoinPointConfig {
     @Pointcut("execution(* com.example.accountservices.application.controller.AccountServiceController.changePassword(..))")
     public void changePass(){}
 
-    @Pointcut("execution(* com.example.accountservices.launcher.config.CustomAccessDeniedHandler.handle(..))")
+    @Pointcut("execution(* com.example.accountservices.infrastructure.config.CustomAccessDeniedHandler.handle(..))")
     public void accessDenied(){}
 
     @Pointcut("execution(* com.example.accountservices.application.controller.AdminController.changeRoles(..))")

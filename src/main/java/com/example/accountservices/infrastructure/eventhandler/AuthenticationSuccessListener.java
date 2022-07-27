@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.eventhandler;
+package com.example.accountservices.infrastructure.eventhandler;
 
 import com.example.accountservices.domain.service.EmployeeAccountService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.config;
+package com.example.accountservices.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;

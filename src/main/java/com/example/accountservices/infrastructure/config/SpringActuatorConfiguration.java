@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.config;
+package com.example.accountservices.infrastructure.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.eventhandler;
+package com.example.accountservices.infrastructure.eventhandler;
 
 import com.example.accountservices.domain.data.AdminRequest;
 import com.example.accountservices.infrastructure.entity.Employee;

@@ -1,4 +1,4 @@
-package com.example.accountservices.launcher.exception;
+package com.example.accountservices.infrastructure.exception;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
