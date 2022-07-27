@@ -1,0 +1,161 @@
+= AccountServices
+
+Employee account and payroll services built using Spring Security. Access to endpoints
+are restricted using role-based access control (RBAC) following OWASP's Application Security
+Verification Standard. For more details on user role access please see the table below.
+
+*User Role Access*
+[cols=5]
+|===
+|Endpoint |Anonymous |User |Accountant|Administrator
+
+|*POST* api/auth/signup
+|Yes
+|Yes
+|Yes
+|Yes
+
+|*POST* api/auth/changepass
+|No
+|Yes
+|Yes
+|Yes
+
+|*GET* api/empl/payment
+|No
+|Yes
+|Yes
+|No
+
+|*POST* api/acct/payments
+|No
+|No
+|Yes
+|No
+
+|*PUT* api/acct/payments
+|No
+|No
+|Yes
+|No
+
+|*GET*  api/admin/user
+|No
+|No
+|No
+|Yes
+
+|*DELETE* api/admin/user
+|No
+|No
+|No
+|Yes
+
+|*PUT* api/admin/user/role
+|No
+|No
+|No
+|Yes
+|===
+
+Information is logged when certain events occur. The following table describes such events and
+the event name.
+
+*Information Security Events*
+[cols=2]
+|===
+|Description |Event Name
+
+|A user has been successfully registered
+|*CREATE_USER*
+
+|A user has changed the password successfully
+|*CHANGE_PASSWORD*
+
+|A user is trying to access a resource without access rights
+|*ACCESS_DENIED*
+
+|Failed authentication
+|*LOGIN_FAILED*
+
+|A role is granted to a user
+|*GRANT_ROLE*
+
+|A role has been revoked
+|*REMOVE_ROLE*
+
+|The Administrator has locked the user
+|*LOCK_USER*
+
+|The Administrator has unlocked a user
+|*UNLOCK_USER*
+
+|The Administrator has deleted a user
+|*DELETE_USER*
+
+|A user has been blocked on suspicion of a brute force attack
+|*BRUTE_FORCE*
+|===
+
+== Installation and Getting Started
+
+. Clone to local repo
+. Install necessary dependencies
+
+----
+./mvnw install
+----
+[start=3]
+. Build project and create Jar file
+
+----
+./mvnw clean package
+----
+
+=== Running Application Locally
+Project can be started using
+
+----
+./mvnw spring-boot:start
+----
+
+And can be stopped with
+
+----
+./mvnw spring-boot:stop
+----
+
+=== Running Application With Docker
+
+First ensure that you have Docker installed. See the following link for details
+
+* https://docs.docker.com/get-docker/
+
+Then build the image and start the containers using Docker Compose
+
+----
+docker-compose up --build
+----
+
+The container can be stopped with
+
+----
+docker-compose down
+----
+
+=== Testing
+
+The application can be tested locally by running
+
+----
+./mvnw test
+----
+
+And with Docker, using the test config file
+
+----
+docker-compose -f docker-compose.test.yml up
+----
+
+NOTE: There is a bug when testing with Docker due to the use of TestContainers in the integration tests.
+As of now, tests are only able to be ran locally. I am currently working to resolve this issue.
