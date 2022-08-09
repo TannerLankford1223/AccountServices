@@ -121,8 +121,10 @@ Brief descriptions of the available endpoints are available in the table below
 |*GET*
 |api/security/events
 |Allows an auditor to view the security event log
-
 |===
+
+For more information on endpoints go to http://localhost:28852/swagger-ui/index.html#/v3/api-docs
+after starting the application.
 
 === User Role Access
 
