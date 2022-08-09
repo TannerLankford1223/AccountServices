@@ -107,12 +107,20 @@ Brief descriptions of the available endpoints are available in the table below
 |Returns user information for all employees
 
 |*DELETE*
-|api/admin/user
+|api/admin/user/{email}
 |Allows an admin to delete an employee
 
 |*PUT*
 |api/admin/user/role
 |Allows an admin to grant or revoke an employee role
+
+|*PUT*
+|api/admin/user/access
+|Allows an admin to lock or unlock a user's account
+
+|*GET*
+|api/security/events
+|Allows an auditor to view the security event log
 
 |===
 
@@ -122,11 +130,12 @@ Access to endpoints are restricted using role-based access control (RBAC) follow
 Application Security Verification Standard. For more details on user role access please
 see the table below.
 
-[cols=5]
+[cols=6]
 |===
-|Endpoint |Anonymous |User |Accountant|Administrator
+|Endpoint |Anonymous |User |Accountant|Administrator|Auditor
 
 |api/auth/signup
+|Yes
 |Yes
 |Yes
 |Yes
@@ -137,38 +146,52 @@ see the table below.
 |Yes
 |Yes
 |Yes
+|Yes
 
 |api/empl/payment
 |No
 |Yes
 |Yes
 |No
+|no
 
 |api/acct/payments
 |No
 |No
 |Yes
 |No
+|No
 
 |api/acct/payments
 |No
 |No
 |Yes
 |No
+|No
 
-|api/admin/user
+|api/admin/user/
 |No
 |No
 |No
 |Yes
+|No
 
-|api/admin/user
+|api/admin/user/{email}
 |No
 |No
 |No
 |Yes
+|No
 
 |api/admin/user/role
+|No
+|No
+|No
+|Yes
+|No
+
+|api/admin/user/access
+|No
 |No
 |No
 |No
