@@ -2,6 +2,14 @@
 
 Employee account and payroll services built using Spring Security.
 
+== Technology Used
+
+. Java 17
+. Maven
+. SpringBoot
+. PostgreSQL
+. Docker
+
 == Installation and Getting Started
 
 . Clone to local repo
