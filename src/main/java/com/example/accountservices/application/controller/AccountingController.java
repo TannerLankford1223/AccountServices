@@ -3,6 +3,7 @@ package com.example.accountservices.application.controller;
 import com.example.accountservices.domain.data.PaymentRequest;
 import com.example.accountservices.domain.data.PaymentResponse;
 import com.example.accountservices.domain.ports.api.PaymentServicePort;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,11 +23,13 @@ public class AccountingController {
     }
 
     @PostMapping("/payments")
+    @Operation(summary = "Allows an accountant to post payroll for employees")
     public PaymentResponse postPayroll(@RequestBody List<@Valid PaymentRequest> payments) {
         return paymentService.postPayroll(payments);
     }
 
     @PutMapping("/payments")
+    @Operation(summary ="Allows an accountant to update a specific employee payment")
     public PaymentResponse updateSalary(@RequestBody @Valid PaymentRequest payment) {
         return paymentService.updateSalary(payment);
     }

@@ -34,6 +34,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(authenticationProvider());
     }
 
+    private static final String[] SWAGGER_ENDPOINTS = {
+            "/swagger-resources/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/webjars/**"
+    };
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -44,6 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests() // manage access
                 .antMatchers("/actuator/**").permitAll()
+                .antMatchers(SWAGGER_ENDPOINTS).permitAll() // Allow access to Swagger endpoints for any user
                 .antMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/auth/changepass").authenticated()
                 .antMatchers(HttpMethod.GET, "/api/empl/payment").hasRole("USER")
